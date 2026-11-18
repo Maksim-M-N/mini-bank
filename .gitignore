@@ -40,4 +40,5 @@ build/
 /mini-bank-db/
 
 .idea/
+/.idea/
 .env

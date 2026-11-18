@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class JdbcConnectionFactory {
-
     private final String url;
     private final String userName;
     private final String password;

@@ -16,8 +16,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "accounts")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Account {
 
     @Id
@@ -31,7 +31,6 @@ public class Account {
     @Column(name = "currency", nullable = false, length = 3)
     private CurrencyCode currencyCode;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
     private AccountStatus status = AccountStatus.ACTIVE;
@@ -39,11 +38,9 @@ public class Account {
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
-
     @CreationTimestamp
     @Column(name = "opened_at", nullable = false, updatable = false)
     private Instant openedAt;
-
 
     @Column(name = "closed_at")
     private Instant closedAt;
@@ -97,7 +94,6 @@ public class Account {
         account.openedAt = openedAt;
         account.closedAt = closedAt;
         account.client = client;
-
         return account;
     }
 }

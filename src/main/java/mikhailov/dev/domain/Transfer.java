@@ -14,8 +14,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "transfers")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Transfer {
 
     public Transfer (Account fromAccount, Account toAccount, BigDecimal amount) {
@@ -31,7 +31,6 @@ public class Transfer {
             throw new IllegalArgumentException("Сумма перевода должна быть больше нуля");
         }
 
-
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = amount;
@@ -42,10 +41,8 @@ public class Transfer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column (nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
