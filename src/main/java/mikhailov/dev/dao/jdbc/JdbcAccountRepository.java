@@ -130,110 +130,47 @@ public class JdbcAccountRepository implements AccountRepository {
 
     @Override
     public List<Account> findAllByClientId(Long clientId) {
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_ALL_BY_CLIENT_ID)) {
-
-            statement.setLong(1, clientId);
-
-            try (ResultSet result = statement.executeQuery()) {
-                List<Account> accounts = new ArrayList<>();
-
-                while (result.next()) {
-                    accounts.add(mapAccount(result));
-                }
-
-                return accounts;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить счета клиента с ID: " + clientId, e);
-        }
+        return queryAccounts(
+                FIND_ALL_BY_CLIENT_ID,
+                "Не удалось получить счета клиента с ID: " + clientId,
+                statement -> statement.setLong(1, clientId)
+        );
     }
 
     @Override
     public List<Account> findActiveAccounts() {
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_ACTIVE_ACCOUNTS)) {
-
-            try (ResultSet result = statement.executeQuery()) {
-                List<Account> accounts = new ArrayList<>();
-
-                while (result.next()) {
-                    accounts.add(mapAccount(result));
-                }
-
-                return accounts;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить список активных счетов", e);
-        }
+        return queryAccounts(
+                FIND_ACTIVE_ACCOUNTS,
+                "Не удалось получить список активных счетов",
+                statement -> {}
+        );
     }
 
     @Override
     public List<Account> findAccountsWithBalanceGreaterThan(BigDecimal amount) {
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_ACCOUNTS_WITH_BALANCE_GREATER_THAN)) {
-
-            statement.setBigDecimal(1, amount);
-
-            try (ResultSet result = statement.executeQuery()) {
-                List<Account> accounts = new ArrayList<>();
-
-                while (result.next()) {
-                    accounts.add(mapAccount(result));
-                }
-
-                return accounts;
-            }
-         } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить счета с балансом больше " + amount, e);
-        }
+        return queryAccounts(
+                FIND_ACCOUNTS_WITH_BALANCE_GREATER_THAN,
+                "Не удалось получить счета с балансом больше " + amount,
+                statement -> statement.setBigDecimal(1, amount)
+        );
     }
 
     @Override
     public List<Account> findAccountsByCurrency(CurrencyCode currency) {
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_ACCOUNTS_BY_CURRENCY)) {
-
-            statement.setString(1, currency.name());
-
-            try (ResultSet result = statement.executeQuery()) {
-                List<Account> accounts = new ArrayList<>();
-
-                while (result.next()) {
-                    accounts.add(mapAccount(result));
-                }
-
-                return accounts;
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить счета в валюте " + currency, e);
-        }
+        return queryAccounts(
+                FIND_ACCOUNTS_BY_CURRENCY,
+                "Не удалось получить счета в валюте " + currency,
+                statement -> statement.setString(1, currency.name())
+        );
     }
 
     @Override
     public List<Account> findBlockedAccounts() {
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_BLOCKED_ACCOUNTS)) {
-
-            try (ResultSet result = statement.executeQuery()) {
-                List<Account> accounts = new ArrayList<>();
-
-                while (result.next()) {
-                    accounts.add(mapAccount(result));
-                }
-
-                return accounts;
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить список заблокированных счетов", e);
-        }
+        return queryAccounts(
+                FIND_BLOCKED_ACCOUNTS,
+                "Не удалось получить список заблокированных счетов",
+                statement -> {}
+        );
     }
 
     @Override
@@ -283,6 +220,28 @@ public class JdbcAccountRepository implements AccountRepository {
         }
     }
 
+    private List<Account> queryAccounts(
+            String sql, String errorMessage, StatementSetter setter) {
+
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            setter.set(statement);
+
+            try (ResultSet result = statement.executeQuery()) {
+                List<Account> accounts = new ArrayList<>();
+
+                while (result.next()) {
+                    accounts.add(mapAccount(result));
+                }
+
+                return accounts;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
+
     private Account mapAccount(ResultSet result) throws SQLException{
         Timestamp closedAtTimestamp = result.getTimestamp("closed_at");
         Instant closedAt = null;
@@ -308,5 +267,10 @@ public class JdbcAccountRepository implements AccountRepository {
                 closedAt,
                 client
         );
+    }
+
+    @FunctionalInterface
+    private interface StatementSetter {
+        void set(PreparedStatement statement) throws SQLException;
     }
 }
