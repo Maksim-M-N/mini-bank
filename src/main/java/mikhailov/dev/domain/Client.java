@@ -52,4 +52,15 @@ public class Client {
 
         return client;
     }
+
+    @Override
+    public String toString() {
+        return "Client{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", createdAt=" + createdAt +
+                ", accounts=" + accounts +
+                '}';
+    }
 }

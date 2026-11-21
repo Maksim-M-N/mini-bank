@@ -2,6 +2,7 @@ package mikhailov.dev.repository;
 
 import mikhailov.dev.domain.Account;
 import mikhailov.dev.domain.enums.AccountStatus;
+import mikhailov.dev.domain.enums.CurrencyCode;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,7 +14,7 @@ public interface AccountRepository {
     List<Account> findAllByClientId(Long clientId);
     List<Account> findActiveAccounts();
     List<Account> findAccountsWithBalanceGreaterThan(BigDecimal amount);
-    List<Account> findAccountsByCurrency(String currency);
+    List<Account> findAccountsByCurrency(CurrencyCode currency);
     List<Account> findBlockedAccounts();
     void updateBalance(Long accountId, BigDecimal newBalance);
     void updateStatus(Long accountId, AccountStatus status);

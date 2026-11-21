@@ -61,4 +61,35 @@ public class Transfer {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "to_account_id", nullable = false)
     private Account toAccount;
+
+    public static Transfer restore(Long id, BigDecimal amount,
+                                   TransferStatus status, String comment,
+                                   Instant createdAt, Account fromAccount,
+                                   Account toAccount) {
+
+        Transfer transfer = new Transfer();
+
+        transfer.id = id;
+        transfer.amount = amount;
+        transfer.status = status;
+        transfer.comment = comment;
+        transfer.createdAt = createdAt;
+        transfer.fromAccount = fromAccount;
+        transfer.toAccount = toAccount;
+
+        return transfer;
+    }
+
+    @Override
+    public String toString() {
+        return "Transfer{" +
+                "id=" + id +
+                ", amount=" + amount +
+                ", status=" + status +
+                ", comment='" + comment + '\'' +
+                ", createdAt=" + createdAt +
+                ", fromAccount=" + fromAccount +
+                ", toAccount=" + toAccount +
+                '}';
+    }
 }

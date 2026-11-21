@@ -96,4 +96,21 @@ public class Account {
         account.client = client;
         return account;
     }
+
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", accountNumber='" + accountNumber + '\'' +
+                ", currencyCode=" + currencyCode +
+                ", status=" + status +
+                ", balance=" + balance +
+                ", openedAt=" + openedAt +
+                ", closedAt=" + closedAt +
+                ", client=" + client +
+                ", transfersFrom=" + transfersFrom +
+                ", transfersTo=" + transfersTo +
+                '}';
+    }
 }
