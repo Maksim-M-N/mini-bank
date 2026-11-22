@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface AccountRepository {
     Optional<Account> findById(Long id);
     Optional<Account> findByAccountNumber(String accountNumber);
+    Optional<Account> findByAccountNumberForUpdate(String accountNumber);
     List<Account> findAllByClientId(Long clientId);
     List<Account> findActiveAccounts();
     List<Account> findAccountsWithBalanceGreaterThan(BigDecimal amount);

@@ -19,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Account {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -83,7 +82,6 @@ public class Account {
                                   CurrencyCode currencyCode, AccountStatus status,
                                   BigDecimal balance, Instant openedAt,
                                   Instant closedAt, Client client) {
-
         Account account = new Account();
 
         account.id = id;
@@ -95,22 +93,5 @@ public class Account {
         account.closedAt = closedAt;
         account.client = client;
         return account;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "id=" + id +
-                ", accountNumber='" + accountNumber + '\'' +
-                ", currencyCode=" + currencyCode +
-                ", status=" + status +
-                ", balance=" + balance +
-                ", openedAt=" + openedAt +
-                ", closedAt=" + closedAt +
-                ", client=" + client +
-                ", transfersFrom=" + transfersFrom +
-                ", transfersTo=" + transfersTo +
-                '}';
     }
 }

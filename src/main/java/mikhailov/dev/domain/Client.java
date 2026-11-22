@@ -14,7 +14,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Client {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,16 +50,5 @@ public class Client {
         client.createdAt = createdAt;
 
         return client;
-    }
-
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", fullName='" + fullName + '\'' +
-                ", phone='" + phone + '\'' +
-                ", createdAt=" + createdAt +
-                ", accounts=" + accounts +
-                '}';
     }
 }

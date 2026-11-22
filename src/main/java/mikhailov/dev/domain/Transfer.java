@@ -17,7 +17,6 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Transfer {
-
     public Transfer (Account fromAccount, Account toAccount, BigDecimal amount) {
         if (fromAccount == null || toAccount == null || amount == null) {
             throw new IllegalArgumentException("Счета и сумма перевода не должны быть null");
@@ -66,7 +65,6 @@ public class Transfer {
                                    TransferStatus status, String comment,
                                    Instant createdAt, Account fromAccount,
                                    Account toAccount) {
-
         Transfer transfer = new Transfer();
 
         transfer.id = id;
@@ -78,18 +76,5 @@ public class Transfer {
         transfer.toAccount = toAccount;
 
         return transfer;
-    }
-
-    @Override
-    public String toString() {
-        return "Transfer{" +
-                "id=" + id +
-                ", amount=" + amount +
-                ", status=" + status +
-                ", comment='" + comment + '\'' +
-                ", createdAt=" + createdAt +
-                ", fromAccount=" + fromAccount +
-                ", toAccount=" + toAccount +
-                '}';
     }
 }

@@ -12,7 +12,6 @@ public class DatabaseInitializer {
     public static void initialize(String url,
                                   String username,
                                   String password, String path) throws SQLException, IOException {
-
         String sql = readScript("/" + path);
 
         try (Connection connection = DriverManager.getConnection(url, username, password)) {

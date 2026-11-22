@@ -1,8 +1,6 @@
 package mikhailov.dev;
 
 import mikhailov.dev.config.JdbcConnectionFactory;
-import mikhailov.dev.dao.jdbc.JdbcAccountRepository;
-import mikhailov.dev.dao.jdbc.JdbcTransferRepository;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,10 +9,5 @@ public class Main {
         String password = "postgres";
 
         JdbcConnectionFactory connectionFactory = new JdbcConnectionFactory(url, name, password);
-
-        JdbcAccountRepository accountRepository = new JdbcAccountRepository(connectionFactory);
-
-        JdbcTransferRepository transferRepository = new JdbcTransferRepository(connectionFactory);
-
     }
 }

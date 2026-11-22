@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class DatabaseSetup {
-
     public static void main(String[] args) throws SQLException, IOException {
         String datePath = "data.sql";
         String schemaPath = "schema.sql";
