@@ -5,6 +5,7 @@ import mikhailov.dev.domain.Account;
 import mikhailov.dev.domain.Client;
 import mikhailov.dev.domain.enums.AccountStatus;
 import mikhailov.dev.domain.enums.CurrencyCode;
+import mikhailov.dev.dto.ClientBalanceSummary;
 import mikhailov.dev.repository.AccountRepository;
 
 import java.math.BigDecimal;
@@ -76,12 +77,44 @@ public class JdbcAccountRepository implements AccountRepository {
     private static final String UPDATE_STATUS = """
         UPDATE accounts
         SET status = ?,
-            closed_at = CASE
-                WHEN ? = 'CLOSED'
-                    THEN COALESCE(closed_at, CURRENT_TIMESTAMP)
+            closed_at =
+            CASE
+                WHEN ? = 'CLOSED' THEN COALESCE(closed_at, CURRENT_TIMESTAMP)
             END
         WHERE id = ? AND (? <> 'CLOSED' OR balance = 0);
         """;
+
+    private static final String GET_CLIENT_BALANCE_SUMMARY = """
+        SELECT c.full_name,
+               COUNT(a.id) AS account_count,
+               COALESCE(SUM(a.balance), 0) AS total_balance,
+               ROUND(AVG(a.balance), 2) AS average_balance
+        FROM clients AS c
+        LEFT JOIN accounts AS a ON a.client_id = c.id
+        GROUP BY c.id, c.full_name
+        ORDER BY c.id;
+        """;
+
+    private static final String GET_RICH_CLIENTS = """
+        SELECT c.full_name,
+               COUNT(a.id) AS account_count,
+               COALESCE(SUM(a.balance), 0) AS total_balance,
+               ROUND(AVG(a.balance), 2) AS average_balance
+        FROM clients AS c
+        LEFT JOIN accounts AS a ON a.client_id = c.id
+        GROUP BY c.id, c.full_name
+        HAVING COALESCE(SUM(a.balance), 0) > ?
+        ORDER BY total_balance DESC;
+        """;
+
+    private static final String FIND_ACCOUNTS_WITH_TRANSFERS = BASE_SELECT + """
+        WHERE EXISTS (
+            SELECT 1
+            FROM transfers AS t
+            WHERE t.from_account_id = a.id
+               OR t.to_account_id = a.id
+        )
+        """ + ORDER_BY;
 
     private final JdbcConnectionFactory connectionFactory;
     private final Connection transactionConnection;
@@ -158,7 +191,6 @@ public class JdbcAccountRepository implements AccountRepository {
             }
         }
     }
-
 
     @Override
     public List<Account> findAllByClientId(Long clientId) {
@@ -243,8 +275,67 @@ public class JdbcAccountRepository implements AccountRepository {
         }
     }
 
+    @Override
+    public List<ClientBalanceSummary> getClientBalanceSummary() {
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_CLIENT_BALANCE_SUMMARY);
+             ResultSet result = statement.executeQuery()) {
 
+            List<ClientBalanceSummary> summaries = new ArrayList<>();
 
+            while (result.next()) {
+                summaries.add(new ClientBalanceSummary(
+                        result.getString("full_name"),
+                        result.getLong("account_count"),
+                        result.getBigDecimal("total_balance"),
+                        result.getBigDecimal("average_balance")
+                ));
+            }
+
+            return summaries;
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Не удалось получить сводку балансов клиентов", e
+            );
+        }
+    }
+
+    @Override
+    public List<ClientBalanceSummary> getRichClients(BigDecimal minTotalBalance) {
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_RICH_CLIENTS)) {
+
+            statement.setBigDecimal(1, minTotalBalance);
+
+            try (ResultSet result = statement.executeQuery()) {
+                List<ClientBalanceSummary> clients = new ArrayList<>();
+
+                while (result.next()) {
+                    clients.add(new ClientBalanceSummary(
+                            result.getString("full_name"),
+                            result.getLong("account_count"),
+                            result.getBigDecimal("total_balance"),
+                            result.getBigDecimal("average_balance")
+                    ));
+                }
+
+                return clients;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Не удалось получить список клиентов с балансом больше " + minTotalBalance, e
+            );
+        }
+    }
+
+    @Override
+    public List<Account> findAccountsWithTransfers() {
+        return queryAccounts(
+                FIND_ACCOUNTS_WITH_TRANSFERS,
+                "Не удалось получить список счетов, участвовавших в переводах",
+                statement -> {}
+        );
+    }
     private Optional<Account> executeFindByAccountNumber(Connection connection,
                                                          String accountNumber) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER)) {

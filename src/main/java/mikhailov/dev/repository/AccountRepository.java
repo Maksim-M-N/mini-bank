@@ -3,6 +3,7 @@ package mikhailov.dev.repository;
 import mikhailov.dev.domain.Account;
 import mikhailov.dev.domain.enums.AccountStatus;
 import mikhailov.dev.domain.enums.CurrencyCode;
+import mikhailov.dev.dto.ClientBalanceSummary;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,4 +20,7 @@ public interface AccountRepository {
     List<Account> findBlockedAccounts();
     void updateBalance(Long accountId, BigDecimal newBalance);
     void updateStatus(Long accountId, AccountStatus status);
+    List<ClientBalanceSummary> getClientBalanceSummary();
+    List<ClientBalanceSummary> getRichClients(BigDecimal minTotalBalance);
+    List<Account> findAccountsWithTransfers();
 }

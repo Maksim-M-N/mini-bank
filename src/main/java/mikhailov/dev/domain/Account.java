@@ -78,6 +78,18 @@ public class Account {
         }
     }
 
+    public void changeBalance(BigDecimal newBalance) {
+        if (newBalance == null) {
+            throw new IllegalArgumentException("Новый баланс счёта не может быть null.");
+        }
+
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Новый баланс счёта не может быть отрицательным.");
+        }
+
+        this.balance = newBalance;
+    }
+
     public static Account restore(Long id, String accountNumber,
                                   CurrencyCode currencyCode, AccountStatus status,
                                   BigDecimal balance, Instant openedAt,

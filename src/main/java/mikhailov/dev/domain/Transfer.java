@@ -17,7 +17,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Transfer {
-    public Transfer (Account fromAccount, Account toAccount, BigDecimal amount) {
+    public Transfer (Account fromAccount, Account toAccount, BigDecimal amount, String comment) {
         if (fromAccount == null || toAccount == null || amount == null) {
             throw new IllegalArgumentException("Счета и сумма перевода не должны быть null");
         }
@@ -34,6 +34,7 @@ public class Transfer {
         this.toAccount = toAccount;
         this.amount = amount;
         this.status = TransferStatus.CREATED;
+        this.comment = comment;
     }
 
     @Id
@@ -60,6 +61,10 @@ public class Transfer {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "to_account_id", nullable = false)
     private Account toAccount;
+
+    public void markSuccessful() {
+        this.status = TransferStatus.SUCCESS;
+    }
 
     public static Transfer restore(Long id, BigDecimal amount,
                                    TransferStatus status, String comment,

@@ -73,8 +73,12 @@ public class JdbcTransferRepository implements TransferRepository {
             """;
 
     private static final String FIND_BY_ACCOUNT_ID = BASE_SELECT + """
-            WHERE t.from_account_id = ? OR t.to_account_id = ?
-            """ + ORDER_BY;
+        WHERE t.from_account_id = ?
+        UNION ALL
+        """ + BASE_SELECT + """
+        WHERE t.to_account_id = ?
+        ORDER BY transfer_created_at DESC, transfer_id DESC;
+        """;
 
     private static final String FIND_OUTGOING_TRANSFERS = BASE_SELECT + """
             WHERE t.from_account_id = ?
