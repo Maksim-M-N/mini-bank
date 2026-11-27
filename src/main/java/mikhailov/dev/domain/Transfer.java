@@ -14,11 +14,10 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "transfers")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Transfer {
-
-    public Transfer (Account fromAccount, Account toAccount, BigDecimal amount) {
+    public Transfer (Account fromAccount, Account toAccount, BigDecimal amount, String comment) {
         if (fromAccount == null || toAccount == null || amount == null) {
             throw new IllegalArgumentException("Счета и сумма перевода не должны быть null");
         }
@@ -31,21 +30,19 @@ public class Transfer {
             throw new IllegalArgumentException("Сумма перевода должна быть больше нуля");
         }
 
-
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = amount;
         this.status = TransferStatus.CREATED;
+        this.comment = comment;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column (nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -64,4 +61,25 @@ public class Transfer {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "to_account_id", nullable = false)
     private Account toAccount;
+
+    public void markSuccessful() {
+        this.status = TransferStatus.SUCCESS;
+    }
+
+    public static Transfer restore(Long id, BigDecimal amount,
+                                   TransferStatus status, String comment,
+                                   Instant createdAt, Account fromAccount,
+                                   Account toAccount) {
+        Transfer transfer = new Transfer();
+
+        transfer.id = id;
+        transfer.amount = amount;
+        transfer.status = status;
+        transfer.comment = comment;
+        transfer.createdAt = createdAt;
+        transfer.fromAccount = fromAccount;
+        transfer.toAccount = toAccount;
+
+        return transfer;
+    }
 }

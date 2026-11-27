@@ -11,15 +11,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
 @Table(name = "accounts")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Account {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,7 +29,6 @@ public class Account {
     @Column(name = "currency", nullable = false, length = 3)
     private CurrencyCode currencyCode;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
     private AccountStatus status = AccountStatus.ACTIVE;
@@ -39,11 +36,9 @@ public class Account {
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
-
     @CreationTimestamp
     @Column(name = "opened_at", nullable = false, updatable = false)
     private Instant openedAt;
-
 
     @Column(name = "closed_at")
     private Instant closedAt;
@@ -52,9 +47,11 @@ public class Account {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
+    @Getter(AccessLevel.NONE)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "fromAccount")
     private List<Transfer> transfersFrom = new ArrayList<>();
 
+    @Getter(AccessLevel.NONE)
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "toAccount")
     private List<Transfer> transfersTo = new ArrayList<>();
 
@@ -64,21 +61,35 @@ public class Account {
         this.client = client;
     }
 
-    public List<Transfer> getTransfersFrom() {
-        return Collections.unmodifiableList(transfersFrom);
+    public void changeBalance(BigDecimal newBalance) {
+        if (newBalance == null) {
+            throw new IllegalArgumentException("Новый баланс счёта не может быть null.");
+        }
+
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Новый баланс счёта не может быть отрицательным.");
+        }
+
+        this.balance = newBalance;
     }
 
-    public List<Transfer> getTransfersTo() {
-        return Collections.unmodifiableList(transfersTo);
-    }
+    public void changeStatus(AccountStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Статус счёта не может быть null.");
+        }
 
-    public void closeAccount() {
-        if (status != AccountStatus.CLOSED) {
-            if (balance.signum() != 0) {
-                throw new IllegalStateException("Баланс должен быть равен 0");
-            }
-            this.status = AccountStatus.CLOSED;
-            this.closedAt = Instant.now();
+        if (status == AccountStatus.CLOSED) {
+            closeAccount();
+        }
+
+        if (status == AccountStatus.ACTIVE) {
+            this.closedAt = null;
+            this.status = AccountStatus.ACTIVE;
+        }
+
+        if (status == AccountStatus.BLOCKED) {
+            this.closedAt = null;
+            this.status = AccountStatus.BLOCKED;
         }
     }
 
@@ -86,7 +97,6 @@ public class Account {
                                   CurrencyCode currencyCode, AccountStatus status,
                                   BigDecimal balance, Instant openedAt,
                                   Instant closedAt, Client client) {
-
         Account account = new Account();
 
         account.id = id;
@@ -97,7 +107,17 @@ public class Account {
         account.openedAt = openedAt;
         account.closedAt = closedAt;
         account.client = client;
-
         return account;
+    }
+
+    private void closeAccount() {
+        if (balance.signum() != 0) {
+            throw new IllegalStateException("Баланс должен быть равен 0");
+        }
+
+        if (status != AccountStatus.CLOSED) {
+            this.status = AccountStatus.CLOSED;
+            this.closedAt = Instant.now();
+        }
     }
 }
