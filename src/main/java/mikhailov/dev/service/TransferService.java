@@ -54,12 +54,10 @@ public class TransferService {
 
     private Account findAccount(AccountRepository accounts, String accountNumber) {
         return accounts.findByAccountNumberForUpdate(accountNumber).orElseThrow(
-                () -> new AccountNotFoundException("Счёт с номером " + accountNumber + " не найден")
-        );
+                () -> new AccountNotFoundException("Счёт с номером " + accountNumber + " не найден"));
     }
 
     private void validateTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
-
         if (amount == null || amount.signum() <= 0) {
             throw new IllegalArgumentException("Сумма перевода должна быть больше нуля");
         }

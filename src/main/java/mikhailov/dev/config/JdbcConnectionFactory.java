@@ -6,16 +6,16 @@ import java.sql.SQLException;
 
 public class JdbcConnectionFactory {
     private final String url;
-    private final String userName;
+    private final String username;
     private final String password;
 
-    public JdbcConnectionFactory(String url, String userName, String password) {
+    public JdbcConnectionFactory(String url, String username, String password) {
         this.url = url;
-        this.userName = userName;
+        this.username = username;
         this.password = password;
     }
 
     public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, userName, password);
+        return DriverManager.getConnection(url, username, password);
     }
 }

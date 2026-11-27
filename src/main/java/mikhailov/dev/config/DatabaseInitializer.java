@@ -4,17 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseInitializer {
-    public static void initialize(String url,
-                                  String username,
-                                  String password, String path) throws SQLException, IOException {
+    public static void initialize(JdbcConnectionFactory connectionFactory,
+                                  String path) throws SQLException, IOException {
         String sql = readScript("/" + path);
 
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+        try (Connection connection = connectionFactory.getConnection()) {
             connection.setAutoCommit(false);
 
             try (Statement statement = connection.createStatement()) {

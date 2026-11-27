@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -48,9 +47,11 @@ public class Account {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
+    @Getter(AccessLevel.NONE)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "fromAccount")
     private List<Transfer> transfersFrom = new ArrayList<>();
 
+    @Getter(AccessLevel.NONE)
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "toAccount")
     private List<Transfer> transfersTo = new ArrayList<>();
 
@@ -58,24 +59,6 @@ public class Account {
         this.accountNumber = accountNumber;
         this.currencyCode = currencyCode;
         this.client = client;
-    }
-
-    public List<Transfer> getTransfersFrom() {
-        return Collections.unmodifiableList(transfersFrom);
-    }
-
-    public List<Transfer> getTransfersTo() {
-        return Collections.unmodifiableList(transfersTo);
-    }
-
-    public void closeAccount() {
-        if (status != AccountStatus.CLOSED) {
-            if (balance.signum() != 0) {
-                throw new IllegalStateException("Баланс должен быть равен 0");
-            }
-            this.status = AccountStatus.CLOSED;
-            this.closedAt = Instant.now();
-        }
     }
 
     public void changeBalance(BigDecimal newBalance) {
@@ -88,6 +71,26 @@ public class Account {
         }
 
         this.balance = newBalance;
+    }
+
+    public void changeStatus(AccountStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Статус счёта не может быть null.");
+        }
+
+        if (status == AccountStatus.CLOSED) {
+            closeAccount();
+        }
+
+        if (status == AccountStatus.ACTIVE) {
+            this.closedAt = null;
+            this.status = AccountStatus.ACTIVE;
+        }
+
+        if (status == AccountStatus.BLOCKED) {
+            this.closedAt = null;
+            this.status = AccountStatus.BLOCKED;
+        }
     }
 
     public static Account restore(Long id, String accountNumber,
@@ -105,5 +108,16 @@ public class Account {
         account.closedAt = closedAt;
         account.client = client;
         return account;
+    }
+
+    private void closeAccount() {
+        if (balance.signum() != 0) {
+            throw new IllegalStateException("Баланс должен быть равен 0");
+        }
+
+        if (status != AccountStatus.CLOSED) {
+            this.status = AccountStatus.CLOSED;
+            this.closedAt = Instant.now();
+        }
     }
 }

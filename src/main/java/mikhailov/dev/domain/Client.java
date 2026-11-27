@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -28,16 +27,13 @@ public class Client {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Getter(AccessLevel.NONE)
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<Account> accounts = new ArrayList<>();
 
     public Client (String fullName, String phone) {
         this.fullName = fullName;
         this.phone = phone;
-    }
-
-    public List<Account> getAccounts() {
-        return Collections.unmodifiableList(accounts);
     }
 
     public static Client restore(Long id, String fullName,

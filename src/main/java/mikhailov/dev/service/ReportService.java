@@ -66,7 +66,6 @@ public class ReportService {
             System.out.println("Комментарий: " + transfer.getComment());
             System.out.println("-------------------------");
         }
-
     }
 
     public void printClientBalanceSummary() {

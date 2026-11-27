@@ -254,21 +254,13 @@ public class JdbcAccountRepository implements AccountRepository {
 
     @Override
     public void updateStatus(Long accountId, AccountStatus status) {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(UPDATE_STATUS)) {
-
-            statement.setString(1, status.name());
-            statement.setString(2, status.name());
-            statement.setLong(3, accountId);
-            statement.setString(4, status.name());
-
-
-            int updatedRows = statement.executeUpdate();
-
-            if (updatedRows == 0) {
-                throw new IllegalStateException(
-                        "Счёт с id=" + accountId
-                                + " не найден или изменение статуса невозможно");
+        try {
+            if (transactionConnection != null) {
+                executeStatusUpdate(transactionConnection, accountId, status);
+            } else {
+                try (Connection connection = connectionFactory.getConnection()) {
+                    executeStatusUpdate(connection, accountId, status);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Не удалось обновить статус счёта с id=" + accountId + " на " + status, e);
@@ -360,6 +352,21 @@ public class JdbcAccountRepository implements AccountRepository {
 
             if (statement.executeUpdate() == 0) {
                 throw new IllegalArgumentException("Счёт с id=" + accountId + " не найден");
+            }
+        }
+    }
+
+    private void executeStatusUpdate(Connection connection, Long accountId,
+                                     AccountStatus status) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_STATUS)) {
+            statement.setString(1, status.name());
+            statement.setString(2, status.name());
+            statement.setLong(3, accountId);
+            statement.setString(4, status.name());
+
+            if (statement.executeUpdate() == 0) {
+                throw new IllegalStateException(
+                        "Счёт с id=" + accountId + " не найден или изменение статуса невозможно");
             }
         }
     }

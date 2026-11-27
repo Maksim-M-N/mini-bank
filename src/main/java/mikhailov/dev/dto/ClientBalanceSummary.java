@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public record ClientBalanceSummary(
         String fullName,
-        long accountCount,
+        Long accountCount,
         BigDecimal totalBalance,
         BigDecimal averageBalance
 ) {}
